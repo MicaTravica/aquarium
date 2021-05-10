@@ -1,0 +1,7 @@
+
+rpi/ConsoleApp/bin/*
+rpi/ConsoleApp/obj/*
+rpi/Logic/bin/*
+rpi/Logic/obj/*
+rpi/publish/*
+rpi/.idea/*
