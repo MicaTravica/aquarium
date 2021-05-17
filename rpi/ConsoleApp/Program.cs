@@ -1,5 +1,6 @@
 ﻿using System;
 using Logic.Constants;
+using Logic.Model.Aquarium;
 using Logic.Model.Pin;
 using Logic.Model.Controller;
 
@@ -16,7 +17,8 @@ namespace ConsoleApp
             IPin button = new Pin(ConstantsRPI.Button);
 
             IController controller = new Controller(motor, greenLed, redLed, bobberFishing, button);
-            controller.Start();
+            IAquarium aquarium = new Aquarium(controller);
+            aquarium.Start();
 
             Console.ReadLine();
         }
