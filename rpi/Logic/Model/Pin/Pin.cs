@@ -1,10 +1,9 @@
-namespace Logic.Model.GreenLed
+namespace Logic.Model.Pin
 {
-    public class GreenLed : IGreenLed
+    public class Pin : IPin
     {
         private readonly int _pin;
-
-        public GreenLed(int pin)
+        public Pin(int pin)
         {
             _pin = pin;
         }
