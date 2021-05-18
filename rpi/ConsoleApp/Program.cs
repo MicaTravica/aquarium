@@ -1,26 +1,59 @@
 ﻿using System;
-using Logic.Constants;
-using Logic.Model.Aquarium;
-using Logic.Model.Pin;
-using Logic.Model.Controller;
 
 namespace ConsoleApp
 {
+    public sealed class StartProcessing : IMessage {}
+
+    public sealed class ButtonPressed : IMessage
+    {
+    }
+
+    public sealed class ButtonReleased : IMessage
+    {
+    }
+
+    public sealed class EightSecondsPassed : IMessage
+    {
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            IPin motor = new Pin(ConstantsRPI.Motor);
-            IPin greenLed = new Pin(ConstantsRPI.LedGreen);
-            IPin redLed = new Pin(ConstantsRPI.LedRed);
-            IPin bobberFishing = new Pin(ConstantsRPI.BobberFishing);
-            IPin button = new Pin(ConstantsRPI.Button);
-
-            IController controller = new Controller(motor, greenLed, redLed, bobberFishing, button);
-            IAquarium aquarium = new Aquarium(controller);
-            aquarium.Start();
-
+            var processor = new Processor();
+            var stateMachine = new StateMachine(processor);
+            
+            processor.StartProcessing(stateMachine.ProcessSingle);
             Console.ReadLine();
+            processor.StopProcessing();
+        }
+    }
+
+    internal sealed class StateMachine
+    {
+        private readonly IMessageBus _messageBus;
+
+        public StateMachine(IMessageBus messageBus)
+        {
+            _messageBus = messageBus;
+            _messageBus.Enqueue(new StartProcessing());
+        }
+        
+        public void ProcessSingle(IMessage message)
+        {
+            switch (message)
+            {
+                case ButtonPressed buttonPressed:
+                    break;
+                case ButtonReleased buttonReleased:
+                    break;
+                case EightSecondsPassed eightSecondsPassed:
+                    break;
+                case StartProcessing startProcessing:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(message));
+            }
         }
     }
 }
