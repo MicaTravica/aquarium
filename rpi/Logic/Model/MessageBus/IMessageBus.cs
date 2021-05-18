@@ -1,4 +1,6 @@
-﻿namespace ConsoleApp
+using Logic.Model.Message;
+
+namespace Logic.Model.MessageBus
 {
     public interface IMessageBus
     {

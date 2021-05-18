@@ -1,15 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using Logic.Model.Message;
 
-namespace ConsoleApp
+namespace Logic.Model.MessageBus
 {
     public sealed class Processor : IMessageBus
     {
         private Action<IMessage> _messageProcessor = _ => { };
         private readonly BlockingCollection<IMessage> _queue = new();
         private readonly Thread _workerThread;
-        
+
         public Processor()
         {
             _workerThread = new Thread(Worker);
@@ -19,8 +20,11 @@ namespace ConsoleApp
         {
             while (!_queue.IsCompleted)
             {
-                var message = _queue.Take();
-                _messageProcessor(message);
+                if (_queue.Count > 0)
+                {
+                    var message = _queue.Take();
+                    _messageProcessor(message);
+                }
             }
         }
 
