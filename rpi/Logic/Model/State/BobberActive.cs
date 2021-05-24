@@ -1,4 +1,3 @@
-using System.Threading;
 using Logic.Model.Message;
 
 namespace Logic.Model.State

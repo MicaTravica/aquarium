@@ -85,8 +85,6 @@ namespace Logic.Model.StateMachine
                     TurnOffAll();
                     if (_state is BobberAlarm || _state is MotorActiveEightSeconds)
                     {
-                        Console.WriteLine(_state);
-                        Console.WriteLine(_timer);
                         _state = CheckBobber();
                     }
                     else
@@ -97,17 +95,13 @@ namespace Logic.Model.StateMachine
                     _state.Start();
                     break;
                 case ButtonReleased:
-                    if (_state is MotorActive && _hold)
+                    if (_state is MotorActive)
                     {
                         _state.Stop();
-                        _state = CheckBobber();
-                    }else if (_state is MotorActive && !_hold)
-                    {
                         StopTimer();
-                        _state.Stop();
-                        _state = new MotorActiveEightSeconds(this);
+                        _state = _hold ? CheckBobber() :  new MotorActiveEightSeconds(this);
+                        _state.Start();
                     }
-                    _state.Start();
                     break;
                 case EightSecondsPassed:
                     _state.Stop();
@@ -141,7 +135,7 @@ namespace Logic.Model.StateMachine
             _ledRed.WriteToPin(turnOn);
         }
 
-        public void TurnOffAll()
+        private void TurnOffAll()
         {
             WriteToMotor(false);
             WriteToRedLed(false);
@@ -175,12 +169,9 @@ namespace Logic.Model.StateMachine
 
         private IState CheckBobber()
         {
-            if (_bobber.GetValue() == 1)
-            {
-                ResetCycle();
-                return new BobberActive(this);
-            }
-            return new StandBy(this);
+            if (_bobber.GetValue() != 1) return new StandBy(this);
+            ResetCycle();
+            return new BobberActive(this);
         }
     }
 }
