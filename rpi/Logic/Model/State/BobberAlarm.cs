@@ -10,16 +10,44 @@ namespace Logic.Model.State
         {
             _stateMachine = stateMachine;
         }
-        public void Start()
+
+        public void TurnOn()
         {
             _stateMachine.WriteToRedLed(true);
             _stateMachine.SetTimer(new TurnOff(), 500);
         }
 
-        public void Stop()
+        public void TurnOff()
         {
             _stateMachine.WriteToRedLed(false);
             _stateMachine.SetTimer(new TurnOn(), 1000);
+        }
+
+        public void ButtonPressed()
+        {
+            _stateMachine.StopTimer();
+            _stateMachine.WriteToRedLed(false);
+            _stateMachine.ChangeState(_stateMachine.CheckBobber());
+        }
+
+        public void ButtonReleased()
+        {
+            
+        }
+
+        public void ButtonHold()
+        {
+          
+        }
+
+        public void BobberIsUp()
+        {
+       
+        }
+
+        public void BobberIsDown()
+        {
+            
         }
     }
 }

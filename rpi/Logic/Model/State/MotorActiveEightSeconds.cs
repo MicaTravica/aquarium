@@ -11,15 +11,41 @@ namespace Logic.Model.State
             _stateMachine = stateMachine;
         }
 
-        public void Start()
+        public void TurnOn()
         {
             _stateMachine.WriteToMotor(true);
-            _stateMachine.SetTimer(new EightSecondsPassed(), 7800);
+            _stateMachine.SetTimer(new TurnOff(), 7800);
         }
 
-        public void Stop()
+        public void TurnOff()
         {
             _stateMachine.WriteToMotor(false);
+            _stateMachine.StopTimer();
+            _stateMachine.ChangeState(_stateMachine.CheckBobber());
         }
+
+        public void ButtonPressed()
+        {
+            _stateMachine.StopTimer();
+            _stateMachine.WriteToMotor(false);
+            _stateMachine.ChangeState(_stateMachine.CheckBobber());
+        }
+
+        public void ButtonReleased()
+        {
+            
+        }
+
+        public void ButtonHold()
+        {
+        }
+
+        public void BobberIsUp()
+        {
+        }
+        public void BobberIsDown()
+        {
+        }
+        
     }
 }

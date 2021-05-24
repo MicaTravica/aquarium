@@ -23,6 +23,10 @@ namespace Logic.Model.StateMachine
         private int _cycle;
         private bool _hold;
 
+        public int Cycle => _cycle;
+
+        public bool Hold => _hold;
+
         public StateMachine(IMessageBus messageBus)
         {
             _messageBus = messageBus;
@@ -35,89 +39,43 @@ namespace Logic.Model.StateMachine
             _ledGreen = new OutputPin.OutputPin(controller, ConstantsRPI.LedGreen);
             _motor = new OutputPin.OutputPin(controller, ConstantsRPI.Motor);
 
-            _bobber.SetEvent(_messageBus.Enqueue, new BobberIsDown(), new BobberIsUpActive());
+            _bobber.SetEvent(_messageBus.Enqueue, new BobberIsDown(), new BobberIsUp());
             _button.SetEvent(_messageBus.Enqueue, new ButtonReleased(), new ButtonPressed());
         }
 
+        public void ChangeState(IState state)
+        {
+            _state = state;
+            _state.TurnOn();
+        }
         public void ProcessSingle(IMessage message)
         {
             switch (message)
             {
-                case BobberIsDown:
-                    if (_state is not BobberAlarm)
-                    {
-                        StopTimer();
-                        TurnOffAll();
-                        _state = new StandBy(this);
-                        _state.Start();
-                    }
-                    break;
-                case BobberIsUpActive:
-                    if (_state is not BobberAlarm)
-                    {
-                        if (_state is not BobberActive)
-                        {
-                            StopTimer();
-                            ResetCycle();
-                            TurnOffAll();
-                            _state = new BobberActive(this);
-                        }
-
-                        if (_cycle >= 3)
-                        {
-                            StopTimer();
-                            _state = new BobberAlarm(this);
-                        }
-
-                        _state.Start();
-                    }
-                    break;
-                case BobberIsUpPause:
-                    _state.Stop();
-                    IncCycle();
-                    break;
-                case ButtonHold:
-                    StopTimer();
-                    _hold = true;
-                    break;
-                case ButtonPressed:
-                    StopTimer();
-                    TurnOffAll();
-                    if (_state is BobberAlarm || _state is MotorActiveEightSeconds)
-                    {
-                        _state = CheckBobber();
-                    }
-                    else
-                    {
-                        _hold = false;
-                        _state = new MotorActive(this);
-                    }
-                    _state.Start();
-                    break;
-                case ButtonReleased:
-                    if (_state is MotorActive)
-                    {
-                        _state.Stop();
-                        StopTimer();
-                        _state = _hold ? CheckBobber() :  new MotorActiveEightSeconds(this);
-                        _state.Start();
-                    }
-                    break;
-                case EightSecondsPassed:
-                    _state.Stop();
-                    StopTimer();
-                    _state = CheckBobber();
-                    _state.Start();
-                    break;
                 case StartProcessing:
                     _state = new StandBy(this);
-                    _state.Start();
-                    break;
-                case TurnOff:
-                    _state.Stop();
+                    _state.TurnOn();
                     break;
                 case TurnOn:
-                    _state.Start();
+                    _state.TurnOn();
+                    break;
+                case TurnOff:
+                    _state.TurnOff();
+                    break;
+                case ButtonPressed:
+                    _state.ButtonPressed();
+                    break;
+                case ButtonReleased:
+                    _state.ButtonReleased();
+                    break;
+                case ButtonHold:
+                    _state.ButtonHold();
+                    break;
+                case BobberIsUp:
+                    _state.BobberIsUp();
+                    break;
+                case BobberIsDown:
+                    _state.BobberIsDown();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(message));
@@ -135,12 +93,6 @@ namespace Logic.Model.StateMachine
             _ledRed.WriteToPin(turnOn);
         }
 
-        private void TurnOffAll()
-        {
-            WriteToMotor(false);
-            WriteToRedLed(false);
-        }
-        
         public void SetTimer(IMessage message, int milliseconds)
         {
             _timer = new Timer(CallbackToTimer, message, TimeSpan.FromMilliseconds(milliseconds),
@@ -152,26 +104,36 @@ namespace Logic.Model.StateMachine
             _messageBus.Enqueue((IMessage) message);
         }
 
-        private void StopTimer()
+        public void StopTimer()
         {
             _timer.Dispose();
         }
 
-        private void IncCycle()
+        public void IncCycle()
         {
             _cycle += 1;
         }
 
-        private void ResetCycle()
+        public void ResetCycle()
         {
             _cycle = 0;
         }
 
-        private IState CheckBobber()
+        public IState CheckBobber()
         {
             if (_bobber.GetValue() != 1) return new StandBy(this);
             ResetCycle();
             return new BobberActive(this);
+        }
+
+        public void Holding()
+        {
+            _hold = true;
+        }
+
+        public void NotHolding()
+        {
+            _hold = false;
         }
     }
 }
